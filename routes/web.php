@@ -16,6 +16,9 @@ $router->get('/', function () use ($router) {
 });
 
 $router->group(['prefix' => 'api/v1'], function () use ($router) {
+    $router->get('test', function(){
+        return 'Hola';
+    });
     $router->group(['prefix' => 'sipredi'], function () use ($router) {
         $router->get('perito-validacion/{id}', 'SiprediController@show');
     });
