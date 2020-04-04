@@ -20,7 +20,7 @@ class SiprediController extends Controller
     public function show($registro)
     {
         try {
-            $sql = 'CALL RCON_SIPREDI_PERITO_VALIDACION(:p1,:ret)';
+            $sql = 'CALL RCON.RCON_SIPREDI_PERITO_VALIDACION(:p1,:ret)';
 
             $res = DB::transaction(function ($conn) use ($sql, $registro) {
                 
