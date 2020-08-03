@@ -20,3 +20,8 @@ $router->group(['prefix' => 'api/v1'], function () use ($router) {
         $router->get('perito-validacion/{id}', 'SiprediController@show');
     });
 });
+
+$router->group(['prefix' => 'PRO/Fiscal/Lotes'], function () use ($router) {
+    $router->get('MasivoService', 'LotesPredialController@server');
+    $router->post('MasivoService', 'LotesPredialController@server');
+});
