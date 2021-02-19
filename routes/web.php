@@ -19,6 +19,9 @@ $router->group(['prefix' => 'api/v1'], function () use ($router) {
     $router->group(['prefix' => 'sipredi'], function () use ($router) {
         $router->get('perito-validacion/{id}', 'SiprediController@show');
     });
+    $router->group(['prefix' => 'beneficios'], function () use ($router) {
+        $router->post('aplicados', 'BeneficiosController@getAplicados');
+    });
 });
 
 $router->group(['prefix' => 'PRO/Fiscal/Lotes'], function () use ($router) {
