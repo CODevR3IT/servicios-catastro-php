@@ -56,7 +56,7 @@ class BeneficiosController extends Controller
             END;';
 
             $conn = oci_connect(env("DB_USERNAME_PRECAT"), env("DB_PASSWORD_PRECAT"), env("DB_TNS_PRECAT"));
-
+            oci_execute(oci_parse($conn,"ALTER SESSION SET NLS_NUMERIC_CHARACTERS = '.,'"));
             $stmt = oci_parse($conn, $procedure);
             oci_bind_by_name($stmt, ':par_cuenta', $cuenta);
             oci_bind_by_name($stmt, ':par_curp', $curp);
