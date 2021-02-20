@@ -72,9 +72,9 @@ class BeneficiosController extends Controller
             oci_free_cursor($cursor);
 
             if (!empty($beneficios)) {
-                return response()->json($beneficios, 200);
+                return response()->json(['respuesta' => $beneficios, 'mensaje' => $mensaje, 'estatus' => true], 200);
             } else {
-                return response()->json(['mensaje' => $mensaje], 404);
+                return response()->json(['respuesta' => [] ,'mensaje' => $mensaje, 'estatus' => false], 404);
             }
         } catch (\Throwable $th) {
             error_log($th);
