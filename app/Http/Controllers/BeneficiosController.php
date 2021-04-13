@@ -56,7 +56,7 @@ class BeneficiosController extends Controller
             END;';
 
             $conn = oci_connect(env("DB_USERNAME_PRECAT"), env("DB_PASSWORD_PRECAT"), env("DB_TNS_PRECAT"));
-
+            oci_execute(oci_parse($conn,"ALTER SESSION SET NLS_NUMERIC_CHARACTERS = '.,'"));
             $stmt = oci_parse($conn, $procedure);
             oci_bind_by_name($stmt, ':par_cuenta', $cuenta);
             oci_bind_by_name($stmt, ':par_curp', $curp);
@@ -72,9 +72,9 @@ class BeneficiosController extends Controller
             oci_free_cursor($cursor);
 
             if (!empty($beneficios)) {
-                return response()->json($beneficios[0], 200);
+                return response()->json(['respuesta' => $beneficios, 'mensaje' => $mensaje, 'estatus' => true], 200);
             } else {
-                return response()->json(['mensaje' => $mensaje], 404);
+                return response()->json(['respuesta' => [] ,'mensaje' => $mensaje, 'estatus' => false], 404);
             }
         } catch (\Throwable $th) {
             error_log($th);
