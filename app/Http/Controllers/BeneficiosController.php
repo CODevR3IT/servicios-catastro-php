@@ -57,16 +57,18 @@ class BeneficiosController extends Controller
                         :par_cursor,
                         :par_mensaje); 
                     END;';
-        
+                    $sql = "ALTER SESSION SET NLS_NUMERIC_CHARACTERS = '.,'";
                     $cursor = null;
                     $pdo = DB::connection('ws')->getPdo();
+                    $stmt = $pdo->prepare($sql);
+                    $stmt->execute();
                     $stmt = $pdo->prepare($procedure);
                    
-                    $stmt->bindParam(':par_cuenta', $cuenta,\PDO::PARAM_STR,20);
-                    $stmt->bindParam(':par_curp', $curp,\PDO::PARAM_STR,20);
-                    $stmt->bindParam(':par_rfc', $rfc,\PDO::PARAM_STR,15);
+                    $stmt->bindParam(':par_cuenta', $cuenta,\PDO::PARAM_STR,100);
+                    $stmt->bindParam(':par_curp', $curp,\PDO::PARAM_STR,100);
+                    $stmt->bindParam(':par_rfc', $rfc,\PDO::PARAM_STR,100);
                     $stmt->bindParam(':par_cursor', $cursor,\PDO::PARAM_STMT);
-                    $stmt->bindParam(':par_mensaje', $mensaje, \PDO::PARAM_STR ,100);
+                    $stmt->bindParam(':par_mensaje', $mensaje, \PDO::PARAM_STR ,4000);
                     $stmt->execute();
                     oci_execute($cursor, OCI_DEFAULT);
                     oci_fetch_all($cursor, $array, 0, -1, OCI_FETCHSTATEMENT_BY_ROW + OCI_ASSOC );
