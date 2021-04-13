@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 use Validator;
+use Log;
 
 class BeneficiosController extends Controller
 {
@@ -46,30 +48,31 @@ class BeneficiosController extends Controller
 
 
             try {
-            $procedure = 'BEGIN 
-            fis.fis_consultas_ws.fis_obt_beneficios_aplicados_p(
-                :par_cuenta,
-                :par_curp,
-                :par_rfc,
-                :par_cursor,
-                :par_mensaje); 
-            END;';
-
-            $conn = oci_connect(env("DB_USERNAME_PRECAT"), env("DB_PASSWORD_PRECAT"), env("DB_TNS_PRECAT"));
-            oci_execute(oci_parse($conn,"ALTER SESSION SET NLS_NUMERIC_CHARACTERS = '.,'"));
-            $stmt = oci_parse($conn, $procedure);
-            oci_bind_by_name($stmt, ':par_cuenta', $cuenta);
-            oci_bind_by_name($stmt, ':par_curp', $curp);
-            oci_bind_by_name($stmt, ':par_rfc', $rfc);
-            $cursor = oci_new_cursor($conn);
-            oci_bind_by_name($stmt, ":par_cursor", $cursor, -1, OCI_B_CURSOR);
-            oci_bind_by_name($stmt, ':par_mensaje', $mensaje, 4000);
-            oci_execute($stmt, OCI_COMMIT_ON_SUCCESS);
-            oci_execute($cursor, OCI_COMMIT_ON_SUCCESS);
-            oci_free_statement($stmt);
-            oci_close($conn);
-            oci_fetch_all($cursor, $beneficios, 0, -1, OCI_FETCHSTATEMENT_BY_ROW + OCI_ASSOC);
-            oci_free_cursor($cursor);
+                $beneficios = DB::connection('ws')->transaction(function($conn) use ($cuenta,$rfc,$curp,$mensaje){
+                    $procedure = 'BEGIN 
+                    fis.fis_consultas_ws.fis_obt_beneficios_aplicados_p(
+                        :par_cuenta,
+                        :par_curp,
+                        :par_rfc,
+                        :par_cursor,
+                        :par_mensaje); 
+                    END;';
+        
+                    $cursor = null;
+                    $pdo = DB::connection('ws')->getPdo();
+                    $stmt = $pdo->prepare($procedure);
+                   
+                    $stmt->bindParam(':par_cuenta', $cuenta,\PDO::PARAM_STR,20);
+                    $stmt->bindParam(':par_curp', $curp,\PDO::PARAM_STR,20);
+                    $stmt->bindParam(':par_rfc', $rfc,\PDO::PARAM_STR,15);
+                    $stmt->bindParam(':par_cursor', $cursor,\PDO::PARAM_STMT);
+                    $stmt->bindParam(':par_mensaje', $mensaje, \PDO::PARAM_STR ,100);
+                    $stmt->execute();
+                    oci_execute($cursor, OCI_DEFAULT);
+                    oci_fetch_all($cursor, $array, 0, -1, OCI_FETCHSTATEMENT_BY_ROW + OCI_ASSOC );
+                    oci_free_cursor($cursor);
+                    return $array;
+                });
 
             if (!empty($beneficios)) {
                 return response()->json(['respuesta' => $beneficios, 'mensaje' => $mensaje, 'estatus' => true], 200);
@@ -78,6 +81,7 @@ class BeneficiosController extends Controller
             }
         } catch (\Throwable $th) {
             error_log($th);
+            Log::info($th);
             return response()->json(['mensaje' => 'Error en el servidor'], 500);
         }
     }
